@@ -1,0 +1,7 @@
+.Polaris-FooterHelp__Icon {
+  display: none;
+}
+span.Polaris-Button__Text > a {
+  color: #202223;
+  text-decoration: none;
+}
