@@ -33,6 +33,7 @@ async function updateTable() {
   orders.forEach((order) => {
     if (!order.customer) return;
     check_rest = 0;
+
     order.line_items.forEach((item) => {
       if (!item.product_id) return;
 
@@ -41,6 +42,11 @@ async function updateTable() {
         item.total_discount === item.price
       ) {
         check_rest++;
+      }
+
+      if (order.id == 4667367653617) {
+        console.log("check", check_rest, order.order_number);
+        console.log("duplicate", duplicate_check[order.customer.id]);
       }
 
       if (Object.keys(purchaseUpdate).includes(item.product_id.toString())) {
@@ -81,10 +87,16 @@ async function updateTable() {
         }
       }
 
-      if (check_rest === 2 && duplicate_check[order.customer.id]) {
+      if (
+        check_rest === 2 &&
+        duplicate_check[order.customer.id] !== undefined
+      ) {
+        console.log("order_number", order.order_number);
+
         const i = duplicate_check[order.customer.id];
         data[i].track = 0;
         data[i].history = {
+          ...data[i].history,
           [item.product_id + order.id]: [
             new Date().toLocaleDateString(),
             "Reset",
