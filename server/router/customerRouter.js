@@ -24,7 +24,7 @@ async function updateTable() {
     params = pageData.nextPageParameters;
   } while (params !== undefined);
   console.log("ordercount", orders.length);
-
+  orders.reverse();
   var data = [],
     duplicate_check = {},
     index = 0;
