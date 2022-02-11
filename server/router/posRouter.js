@@ -31,7 +31,7 @@ function register(app) {
     ctx.status = 200;
     ctx.body = {
       type: "simple_action_list",
-      points_label: "Visits",
+      points_label: "Purchases",
       points_balance: balance,
       actions: [
         {
