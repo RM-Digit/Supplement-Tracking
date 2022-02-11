@@ -36,9 +36,9 @@ function register(app) {
       actions: [
         {
           type: "flat_discount",
-          title: "RLT Tracking",
+          title: "Supplement Tracking",
           description: "Track Purchase History",
-          action_id: "123ABC" + i,
+          action_id: "sup123ABC" + i,
           value: "1",
         },
       ],

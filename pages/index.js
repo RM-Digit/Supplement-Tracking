@@ -1,4 +1,4 @@
-import { Page, SkeletonBodyText } from "@shopify/polaris";
+import { Page, SkeletonBodyText, Frame } from "@shopify/polaris";
 import Table from "../components/dataTable";
 import { useState, useEffect } from "react";
 import { http } from "../services/httpServices";
@@ -42,6 +42,7 @@ const Index = () => {
 
   const getPickedProducts = async (values) => {
     setProducts(values);
+    console.log("product updated");
     await http.updateCustomers();
 
     const timer = setInterval(async () => {
@@ -69,42 +70,46 @@ const Index = () => {
     init();
   }, []);
   return (
-    <Page
-      title={"Tracking Report"}
-      secondaryActions={[
-        {
-          content: "Add Products",
-          icon: AddProductMajor,
-          onAction: handleAddProducts,
-        },
-        {
-          content: (
-            <CSVLink
-              data={csvData}
-              asyncOnClick={true}
-              onClick={handleCSVExport}
-              filename={`${new Date().toLocaleString()}.csv`}
-            >
-              Export CSV
-            </CSVLink>
-          ),
-          icon: ExportMinor,
-        },
-      ]}
-    >
-      {pickerOpen && (
-        <ProductPicker
-          setPickedProducts={getPickedProducts}
-          initProducts={products}
-        />
-      )}
-      {pickerOpen && products.length > 0 && <ProductList products={products} />}
-      {customers.length > 0 ? (
-        <Table data={customers} cId={cId} />
-      ) : (
-        <SkeletonBodyText />
-      )}
-    </Page>
+    <Frame>
+      <Page
+        title={"Tracking Report"}
+        secondaryActions={[
+          {
+            content: "Add Products",
+            icon: AddProductMajor,
+            onAction: handleAddProducts,
+          },
+          {
+            content: (
+              <CSVLink
+                data={csvData}
+                asyncOnClick={true}
+                onClick={handleCSVExport}
+                filename={`${new Date().toLocaleString()}.csv`}
+              >
+                Export CSV
+              </CSVLink>
+            ),
+            icon: ExportMinor,
+          },
+        ]}
+      >
+        {pickerOpen && (
+          <ProductPicker
+            setPickedProducts={getPickedProducts}
+            initProducts={products}
+          />
+        )}
+        {pickerOpen && products.length > 0 && (
+          <ProductList products={products} />
+        )}
+        {customers.length > 0 ? (
+          <Table data={customers} cId={cId} />
+        ) : (
+          <SkeletonBodyText />
+        )}
+      </Page>
+    </Frame>
   );
 };
 

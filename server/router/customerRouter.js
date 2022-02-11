@@ -7,6 +7,7 @@ const prodcutModel = require("../../models/productModel");
 async function updateTable() {
   const products = await prodcutModel.find({});
   var purchaseUpdate = {};
+  const resetProducts = [7342578958577, 7342578565361];
   products.forEach((product) => {
     purchaseUpdate = {
       ...purchaseUpdate,
@@ -27,11 +28,21 @@ async function updateTable() {
   var data = [],
     duplicate_check = {},
     index = 0;
+  var check_rest = 0;
 
   orders.forEach((order) => {
     if (!order.customer) return;
+    check_rest = 0;
     order.line_items.forEach((item) => {
       if (!item.product_id) return;
+
+      if (
+        resetProducts.includes(item.product_id) &&
+        item.total_discount === item.price
+      ) {
+        check_rest++;
+      }
+
       if (Object.keys(purchaseUpdate).includes(item.product_id.toString())) {
         const customer_id = order.customer.id;
 
@@ -68,6 +79,19 @@ async function updateTable() {
           };
           data.push(temp);
         }
+      }
+
+      if (check_rest === 2 && duplicate_check[order.customer.id]) {
+        const i = duplicate_check[order.customer.id];
+        data[i].track = 0;
+        data[i].history = {
+          [item.product_id + order.id]: [
+            new Date().toLocaleDateString(),
+            "Reset",
+            order.order_status_url,
+            0,
+          ],
+        };
       }
     });
   });

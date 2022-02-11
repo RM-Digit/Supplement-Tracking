@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   Thumbnail,
   Card,
@@ -6,11 +6,52 @@ import {
   ResourceList,
   TextStyle,
   SkeletonThumbnail,
+  TextField,
+  Button,
+  Toast,
 } from "@shopify/polaris";
-
+import { http } from "../services/httpServices";
 export default function App({ products }) {
+  const [value, setValue] = React.useState({});
+  const [active, setActive] = React.useState(false);
+  const handleTextChange = (v, id) => {
+    setValue((value) => ({ ...value, [id]: v }));
+  };
+  const toggleActive = useCallback(() => setActive((active) => !active), []);
+  const handleSave = () => {
+    const productsToSave = products.map((product) => ({
+      ...product,
+      track: value[product.product_id],
+    }));
+
+    http.saveProducts(productsToSave).then((res) => {
+      if (res.data.success) setActive(true);
+    });
+  };
+
+  const toastMarkup = active ? (
+    <Toast
+      content="It can take up to 1 min for the change to be reflected."
+      onDismiss={toggleActive}
+    />
+  ) : null;
+
   return (
-    <Card>
+    <Card sectioned>
+      {Object.keys(value).length > 0 ? (
+        <Card.Header
+          title="Selected Products"
+          actions={[
+            {
+              content: <Button primary>Save Products</Button>,
+              onAction: handleSave,
+            },
+          ]}
+        ></Card.Header>
+      ) : (
+        <Card.Header title="Selected Products"></Card.Header>
+      )}
+      {toastMarkup}
       <ResourceList
         resourceName={{ singular: "product", plural: "products" }}
         items={products}
@@ -36,10 +77,15 @@ export default function App({ products }) {
                 <div>{tags}</div>
               </div>
               <div style={{ float: "right" }}>
-                <h3>
-                  <TextStyle variation="strong">trackNumber</TextStyle>
-                </h3>
-                <div style={{ textAlign: "center" }}>{track}</div>
+                <div style={{ textAlign: "center" }}>
+                  <TextField
+                    label="trackNumber"
+                    value={value[product_id]}
+                    placeholder={track}
+                    onChange={(v) => handleTextChange(v, product_id)}
+                    autoComplete="off"
+                  />
+                </div>
               </div>
             </ResourceItem>
           );

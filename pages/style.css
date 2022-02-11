@@ -5,3 +5,6 @@ span.Polaris-Button__Text > a {
   color: #202223;
   text-decoration: none;
 }
+.Polaris-Card__Header {
+  padding-bottom: 2rem;
+}
