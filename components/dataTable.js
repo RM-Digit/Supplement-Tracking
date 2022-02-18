@@ -31,6 +31,8 @@ export default function Table({ data, cId }) {
   const [active, setActive] = React.useState(false);
   const [resetActive, setResetActive] = React.useState([]);
   const toggleActive = useCallback(() => setActive((active) => !active), []);
+  const [searchValue, setSearchValue] = useState("");
+
   const perPage = 10;
   const handleClick = (history) => {
     const dateTimeFormat = new Intl.DateTimeFormat("en", {
@@ -75,51 +77,60 @@ export default function Table({ data, cId }) {
     setTrack(v);
   };
 
+  const handleSearch = (value) => {
+    console.log("value", value);
+    setSearchValue(value);
+  };
+
   useEffect(() => {
     let pageData = data;
     if (cId) {
       pageData = data.filter((row) => row.customer_id.toString() === cId);
     }
-    let tableRows = pageData.map((row, index) => [
-      row.customer_name,
-      row.customer_email,
-      changeActive === index ? (
-        <TextField value={track} onChange={handleTextChange} />
-      ) : resetActive.includes(index) ? (
-        0
-      ) : (
-        row.track
-      ),
-      <span style={{ display: "flex", gap: "10px" }}>
-        {changeActive === index ? (
-          <Button
-            onClick={() => handleUpdate(row.customer_id, index)}
-            icon={SaveMinor}
-          ></Button>
+    let tableRows = pageData
+      .filter(
+        (row) => row.customer_email && row.customer_email.includes(searchValue)
+      )
+      .map((row, index) => [
+        row.customer_name,
+        row.customer_email,
+        changeActive === index ? (
+          <TextField value={track} onChange={handleTextChange} />
+        ) : resetActive.includes(index) ? (
+          0
         ) : (
+          row.track
+        ),
+        <span style={{ display: "flex", gap: "10px" }}>
+          {changeActive === index ? (
+            <Button
+              onClick={() => handleUpdate(row.customer_id, index)}
+              icon={SaveMinor}
+            ></Button>
+          ) : (
+            <Button
+              onClick={() => {
+                handleChange(row.customer_id, index);
+              }}
+              icon={ExchangeMajor}
+            ></Button>
+          )}
           <Button
             onClick={() => {
-              handleChange(row.customer_id, index);
+              handleClick(row.history);
             }}
-            icon={ExchangeMajor}
+            icon={RecentSearchesMajor}
           ></Button>
-        )}
-        <Button
-          onClick={() => {
-            handleClick(row.history);
-          }}
-          icon={RecentSearchesMajor}
-        ></Button>
-        <Button
-          onClick={() => handleReset(row.customer_id, index)}
-          icon={ResetMinor}
-        ></Button>
-      </span>,
-    ]);
+          <Button
+            onClick={() => handleReset(row.customer_id, index)}
+            icon={ResetMinor}
+          ></Button>
+        </span>,
+      ]);
 
     setTotal(pageData.length);
     setRows(tableRows);
-  }, [data, cId, changeActive, track, resetActive]);
+  }, [data, cId, changeActive, track, resetActive, searchValue]);
 
   const toastMarkup = active ? (
     <Toast content="Operation Success!" onDismiss={toggleActive} />
@@ -128,7 +139,19 @@ export default function Table({ data, cId }) {
   return (
     <>
       {(cId === "" || (cId && rows.length > 0)) && (
-        <Card>
+        <Card
+          actions={[
+            {
+              content: (
+                <TextField
+                  value={searchValue}
+                  onChange={(v) => handleSearch(v)}
+                  placeholder="Search By Email"
+                />
+              ),
+            },
+          ]}
+        >
           {toastMarkup}
           <DataTable
             columnContentTypes={["text", "text", "numeric", "text"]}

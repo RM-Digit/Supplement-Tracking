@@ -105,10 +105,10 @@ async function updateTable() {
 
   return saveModel;
 }
-// cron.schedule("* * * * *", () => {
-//   console.log("running a task every minute");
-//   // updateTable();
-// });
+cron.schedule("* * * * *", () => {
+  console.log("running a task every minute");
+  updateTable();
+});
 
 const router = new Router({
   prefix: "/api/customers",
