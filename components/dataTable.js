@@ -89,7 +89,7 @@ export default function Table({ data, cId }) {
     }
     let tableRows = pageData
       .filter(
-        (row) => row.customer_email && row.customer_email.includes(searchValue)
+        (row) => (row.customer_email && (row.customer_email.includes(searchValue) || row.customer_name.includes(searchValue))
       )
       .map((row, index) => [
         row.customer_name,
@@ -146,7 +146,7 @@ export default function Table({ data, cId }) {
                 <TextField
                   value={searchValue}
                   onChange={(v) => handleSearch(v)}
-                  placeholder="Search By Email"
+                  placeholder="Search By Email or Name"
                 />
               ),
             },
