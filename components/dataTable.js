@@ -89,7 +89,9 @@ export default function Table({ data, cId }) {
     }
     let tableRows = pageData
       .filter(
-        (row) => (row.customer_email && (row.customer_email.includes(searchValue) || row.customer_name.includes(searchValue))
+        (row) =>
+          (row.customer_email && row.customer_email.includes(searchValue)) ||
+          (row.customer_name && row.customer_name.includes(searchValue))
       )
       .map((row, index) => [
         row.customer_name,
