@@ -19,7 +19,7 @@ Shopify.Context.initialize({
   API_KEY: process.env.SHOPIFY_API_KEY,
   API_SECRET_KEY: process.env.SHOPIFY_API_SECRET,
   SCOPES: process.env.SCOPES.split(","),
-  HOST_NAME: process.env.HOST.replace(/https:\/\/|\/$/g, ""),
+  HOST_NAME: process.env.HOST_LT.replace(/https:\/\/|\/$/g, ""),
   API_VERSION: ApiVersion.October20,
   IS_EMBEDDED_APP: true,
   // This should be replaced with your preferred storage strategy
@@ -109,6 +109,7 @@ app.prepare().then(async () => {
   require("./router/webhookRouter")(server);
   require("./router/posRouter")(server);
   require("./router/productRouter")(server);
+  require("./router/resetRouter")(server);
 
   server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);

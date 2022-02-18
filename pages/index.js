@@ -2,7 +2,11 @@ import { Page, SkeletonBodyText, Frame } from "@shopify/polaris";
 import Table from "../components/dataTable";
 import { useState, useEffect } from "react";
 import { http } from "../services/httpServices";
-import { AddProductMajor, ExportMinor } from "@shopify/polaris-icons";
+import {
+  AddProductMajor,
+  ExportMinor,
+  
+} from "@shopify/polaris-icons";
 import ProductPicker from "../components/resourcePicker";
 import ProductList from "../components/productList";
 import { CSVLink } from "react-csv";
@@ -91,7 +95,7 @@ const Index = () => {
               </CSVLink>
             ),
             icon: ExportMinor,
-          },
+          }
         ]}
       >
         {pickerOpen && (

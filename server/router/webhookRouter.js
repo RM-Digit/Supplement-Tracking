@@ -8,115 +8,60 @@ const router = new Router({
 
 function register(app) {
   router.post("/order-received", async (ctx) => {
-    const trackProducts = {
-      7443809140977: 1,
-      7516467396849: 5,
-      7516467298545: 10,
-      7519373263089: -1,
-    };
     const order = ctx.request.body;
-    console.log("body", order);
+    console.log("webhook order", order.customer.id);
     const customer_id = order.customer.id;
+    const products = await prodcutModel.find({});
+    const tracks = await trackModel.find({});
+    var purchaseUpdate = {};
+    products.forEach((product) => {
+      purchaseUpdate = {
+        ...purchaseUpdate,
+        [product.product_id]: product.track,
+      };
+    });
 
-    const findItem1 = order.line_items.find(
-      (item) => item.product_id == Object.keys(trackProducts)[0]
-    );
-    const findItem2 = order.line_items.find(
-      (item) => item.product_id == Object.keys(trackProducts)[1]
-    );
-    const findItem3 = order.line_items.find(
-      (item) => item.product_id == Object.keys(trackProducts)[2]
-    );
-    const findItem4 = order.line_items.find(
-      (item) => item.product_id == Object.keys(trackProducts)[3]
-    );
-
-    if (findItem1) {
-      let update = await trackModel.findOneAndUpdate(
-        { customer_id: customer_id },
-        {
-          $set: {
-            order_id: order.id,
-            customer_id: customer_id,
-            customer_name: `${order.customer.first_name} ${order.customer.last_name}`,
-            customer_email: order.customer.email,
-            item_title: findItem1.title,
-            $inc: { track: 1 },
-            $mergeObjects: {
-              history: {
-                [findItem1.product_id]: [
-                  order.created_at,
-                  item.title,
-                  order.order_status_url,
-                  purchaseUpdate[item.product_id],
-                ],
+    order.line_items.forEach((item) => {
+      if (Object.keys(purchaseUpdate).includes(item.product_id.toString())) {
+        const customer = tracks.find((x) => x.customer_id === customer_id);
+        if (customer) {
+          const history = {
+            ...customer.history,
+            [item.product_id + order.id]: [
+              order.created_at,
+              item.title,
+              order.order_status_url,
+              purchaseUpdate[item.product_id] * item.quantity,
+            ],
+          };
+          trackModel.findOneAndUpdate(
+            { customer_id: customer_id },
+            {
+              $inc: {
+                track: purchaseUpdate[item.product_id] * item.quantity,
               },
+              history: history,
+            }
+          );
+        } else {
+          const temp = {
+            customer_id: customer_id,
+            customer_email: order.customer.email,
+            customer_name: `${order.customer.first_name} ${order.customer.last_name}`,
+            track: purchaseUpdate[item.product_id] * item.quantity,
+            history: {
+              [item.product_id + order.id]: [
+                order.created_at,
+                item.title,
+                order.order_status_url,
+                purchaseUpdate[item.product_id] * item.quantity,
+              ],
             },
-          },
-        },
-        { upsert: true, new: true }
-      );
-
-      console.log("item1 updated");
-    }
-
-    if (findItem2) {
-      let update = await trackModel.findOneAndUpdate(
-        { customer_id: customer_id },
-        {
-          $set: {
-            order_id: order.id,
-            customer_id: customer_id,
-            customer_name: `${order.customer.first_name} ${order.customer.last_name}`,
-            customer_email: order.customer.email,
-            item_title: findItem1.title,
-            $inc: { track: 5 },
-          },
-        },
-        { upsert: true, new: true }
-      );
-
-      console.log("item2 updated");
-    }
-
-    if (findItem3) {
-      let update = await trackModel.findOneAndUpdate(
-        { customer_id: customer_id },
-        {
-          $set: {
-            order_id: order.id,
-            customer_id: customer_id,
-            customer_name: `${order.customer.first_name} ${order.customer.last_name}`,
-            customer_email: order.customer.email,
-            item_title: findItem3.title,
-            $inc: { track: 10 },
-          },
-        },
-        { upsert: true, new: true }
-      );
-
-      console.log("item3 updated");
-    }
-
-    if (findItem4) {
-      let update = await trackModel.findOneAndUpdate(
-        { customer_id: customer_id },
-        {
-          $set: {
-            order_id: order.id,
-            customer_id: customer_id,
-            customer_name: `${order.customer.first_name} ${order.customer.last_name}`,
-            customer_email: order.customer.email,
-            item_title: findItem4.title,
-            $inc: { track: -1 },
-          },
-        },
-        { upsert: true, new: true }
-      );
-
-      console.log("item4 updated");
-    }
-
+          };
+          trackModel.insertOne(temp);
+        }
+      }
+    });
     ctx.body = { success: true };
   });
 
