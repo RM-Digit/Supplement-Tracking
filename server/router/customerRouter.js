@@ -122,13 +122,23 @@ async function addAllCustomers() {
   } while (params !== undefined);
   var arrayToAdd = [];
   customers.forEach((customer) => {
-    const find = data.findIndex((c) => c.customer_id === customer.id);
+    const find = data.findIndex(
+      (c) => c.customer_id === customer.id.toString()
+    );
+    console.log("find", find);
     if (find === -1) {
       const temp = {
         customer_id: customer.id,
         customer_email: customer.email,
         customer_name: `${customer.first_name} ${customer.last_name}`,
-        history: {},
+        history: {
+          [customer.id]: [
+            customer.created_at,
+            `${customer.first_name} ${customer.last_name}`,
+            customer.email,
+            "New Customer Added",
+          ],
+        },
         track: 0,
       };
       arrayToAdd.push(temp);
@@ -138,7 +148,7 @@ async function addAllCustomers() {
   console.log("update done");
 }
 
-cron.schedule("*/3 * * * *", () => {
+cron.schedule("*/2 * * * *", () => {
   console.log("running a task every minute");
   addAllCustomers();
 });

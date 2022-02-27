@@ -10,6 +10,7 @@ const CustomerModel = new Schema(
     },
     customer_email: {
       type: String,
+      unique: true,
     },
     customer_name: {
       type: String,
