@@ -62,6 +62,7 @@ function register(app) {
         }
       }
     });
+    ctx.status = 200;
     ctx.body = { success: true };
   });
 

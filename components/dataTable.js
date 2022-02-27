@@ -35,6 +35,7 @@ export default function Table({ data, cId }) {
 
   const perPage = 10;
   const handleClick = (history) => {
+    if (history === {}) return true;
     const dateTimeFormat = new Intl.DateTimeFormat("en", {
       year: "numeric",
       month: "long",

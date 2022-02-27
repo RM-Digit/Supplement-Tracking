@@ -110,12 +110,46 @@ async function updateTable() {
 //   updateTable();
 // });
 
+async function addAllCustomers() {
+  const data = await trackModel.find({});
+  var customers = [];
+  var params = { limit: 250, status: "any" };
+
+  do {
+    const pageData = await shopify.customer.list(params);
+    customers = [...customers, ...pageData];
+    params = pageData.nextPageParameters;
+  } while (params !== undefined);
+  var arrayToAdd = [];
+  customers.forEach((customer) => {
+    const find = data.findIndex((c) => c.customer_id === customer.id);
+    if (find === -1) {
+      const temp = {
+        customer_id: customer.id,
+        customer_email: customer.email,
+        customer_name: `${customer.first_name} ${customer.last_name}`,
+        history: {},
+        track: 0,
+      };
+      arrayToAdd.push(temp);
+    }
+  });
+  const update = await trackModel.insertMany(arrayToAdd);
+  console.log("update done");
+}
+
+cron.schedule("*/3 * * * *", () => {
+  console.log("running a task every minute");
+  addAllCustomers();
+});
+
 const router = new Router({
   prefix: "/api/customers",
 });
 
 function register(app) {
   router.post("/update", async (ctx) => {
+    console.log("update database");
     const updates = await updateTable();
     ctx.body = { success: true };
   });

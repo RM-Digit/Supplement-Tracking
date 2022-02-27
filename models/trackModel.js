@@ -4,20 +4,14 @@ const Schema = mongoose.Schema;
 
 const CustomerModel = new Schema(
   {
-    order_id: {
-      type: String,
-      unique: true,
-    },
     customer_id: {
       type: String,
+      unique: true,
     },
     customer_email: {
       type: String,
     },
     customer_name: {
-      type: String,
-    },
-    item_title: {
       type: String,
     },
     history: {
