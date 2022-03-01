@@ -58,7 +58,8 @@ function register(app) {
               ],
             },
           };
-          trackModel.insertOne(temp);
+          const inst = new trackModel(temp);
+          inst.save(temp);
         }
       }
     });

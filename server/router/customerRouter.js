@@ -125,7 +125,6 @@ async function addAllCustomers() {
     const find = data.findIndex(
       (c) => c.customer_id === customer.id.toString()
     );
-    console.log("find", find);
     if (find === -1) {
       const temp = {
         customer_id: customer.id,
@@ -144,11 +143,11 @@ async function addAllCustomers() {
       arrayToAdd.push(temp);
     }
   });
+  console.log("arrayToAdd", arrayToAdd);
   const update = await trackModel.insertMany(arrayToAdd);
-  console.log("update done");
 }
 
-cron.schedule("*/2 * * * *", () => {
+cron.schedule("* * * * *", () => {
   console.log("running a task every minute");
   addAllCustomers();
 });
