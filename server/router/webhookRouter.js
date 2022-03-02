@@ -10,7 +10,7 @@ function register(app) {
   router.post("/order-received", async (ctx) => {
     const order = ctx.request.body;
     console.log("webhook order", order.customer.id);
-    const customer_id = order.customer.id;
+    const customer_id = order.customer.id.toString();
     const products = await prodcutModel.find({});
     const tracks = await trackModel.find({});
     var purchaseUpdate = {};
