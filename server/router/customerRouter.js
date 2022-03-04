@@ -81,17 +81,17 @@ async function updateTable() {
           data.push(temp);
         }
       }
-
       if (
         check_rest === 2 &&
         duplicate_check[order.customer.id] !== undefined
       ) {
+        check_rest = 0;
         const i = duplicate_check[order.customer.id];
         data[i].track = 0;
         data[i].history = {
           ...data[i].history,
           [item.product_id + order.id]: [
-            new Date().toLocaleDateString(),
+            order.created_at,
             "Reset",
             order.order_status_url,
             0,
@@ -130,6 +130,7 @@ async function addAllCustomers() {
     customers = [...customers, ...pageData];
     params = pageData.nextPageParameters;
   } while (params !== undefined);
+  console.log("customers", customers.length);
   var arrayToAdd = [];
   customers.forEach((customer) => {
     const find = data.findIndex(
@@ -155,6 +156,7 @@ async function addAllCustomers() {
   });
   console.log("arrayToAdd", arrayToAdd);
   const update = await trackModel.insertMany(arrayToAdd);
+  return arrayToAdd.length;
 }
 
 // cron.schedule("* * * * *", () => {
@@ -170,6 +172,12 @@ function register(app) {
   router.post("/update", async (ctx) => {
     console.log("update database");
     const updates = await updateTable();
+    ctx.body = { success: true };
+  });
+
+  router.post("/add", async (ctx) => {
+    console.log("add database");
+    const add = await addAllCustomers();
     ctx.body = { success: true };
   });
 
