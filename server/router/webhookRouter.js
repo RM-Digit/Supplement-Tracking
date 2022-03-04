@@ -9,7 +9,7 @@ const router = new Router({
 function register(app) {
   router.post("/order-received", async (ctx) => {
     const order = ctx.request.body;
-    console.log("webhook order", order.customer.id);
+    console.log("webhook order", order.source_name, order.customer.id);
     const customer_id = order.customer.id.toString();
     const products = await prodcutModel.find({});
     const tracks = await trackModel.find({});
@@ -61,6 +61,23 @@ function register(app) {
           const inst = new trackModel(temp);
           inst.save(temp);
         }
+      } else {
+        const temp = {
+          customer_id: customer_id,
+          customer_email: order.customer.email,
+          customer_name: `${order.customer.first_name} ${order.customer.last_name}`,
+          track: 0,
+          history: {
+            [customer_id + order.id]: [
+              order.created_at,
+              item.title,
+              order.order_status_url,
+              0,
+            ],
+          },
+        };
+        const inst = new trackModel(temp);
+        inst.save(temp);
       }
     });
     ctx.status = 200;

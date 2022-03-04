@@ -100,6 +100,16 @@ async function updateTable() {
       }
     });
   });
+
+  const bulkWrite = await trackModel.bulkWrite(
+    data.map((order) => ({
+      updateOne: {
+        filter: { customer_id: order.customer_id },
+        update: { $set: order },
+        upsert: true,
+      },
+    }))
+  );
   const deleteModel = await trackModel.deleteMany({});
   const saveModel = await trackModel.insertMany(data);
 
@@ -147,10 +157,10 @@ async function addAllCustomers() {
   const update = await trackModel.insertMany(arrayToAdd);
 }
 
-cron.schedule("* * * * *", () => {
-  console.log("running a task every minute");
-  addAllCustomers();
-});
+// cron.schedule("* * * * *", () => {
+//   console.log("running a task every minute");
+//   addAllCustomers();
+// });
 
 const router = new Router({
   prefix: "/api/customers",
