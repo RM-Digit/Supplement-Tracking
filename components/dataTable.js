@@ -163,6 +163,7 @@ export default function Table({ data, cId }) {
           <DataTable
             columnContentTypes={["text", "text", "numeric", "text"]}
             headings={["Name", "Email", "Track", "Actions"]}
+            verticalAlign="middle"
             rows={rows.slice(
               (currentPage - 1) * perPage,
               total > currentPage * perPage - 1
