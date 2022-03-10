@@ -18,6 +18,7 @@ import {
   ResetMinor,
   ExchangeMajor,
   SaveMinor,
+  DeleteMajor,
 } from "@shopify/polaris-icons";
 
 export default function Table({ data, cId }) {
@@ -32,6 +33,7 @@ export default function Table({ data, cId }) {
   const [resetActive, setResetActive] = React.useState([]);
   const toggleActive = useCallback(() => setActive((active) => !active), []);
   const [searchValue, setSearchValue] = useState("");
+  const [rowToDelete, setDeleteRow] = useState("");
 
   const perPage = 10;
   const handleClick = (history) => {
@@ -83,12 +85,18 @@ export default function Table({ data, cId }) {
     setSearchValue(value);
   };
 
+  const handleDelete = async (customerId) => {
+    await http.deleteById(customerId);
+    setDeleteRow(customerId);
+  };
+
   useEffect(() => {
     let pageData = data;
     if (cId) {
       pageData = data.filter((row) => row.customer_id.toString() === cId);
     }
     let tableRows = pageData
+      .filter((r) => r.customer_id !== rowToDelete)
       .filter(
         (row) =>
           (row.customer_email &&
@@ -132,12 +140,16 @@ export default function Table({ data, cId }) {
             onClick={() => handleReset(row.customer_id, index)}
             icon={ResetMinor}
           ></Button>
+          <Button
+            onClick={() => handleDelete(row.customer_id)}
+            icon={DeleteMajor}
+          ></Button>
         </span>,
       ]);
 
     setTotal(pageData.length);
     setRows(tableRows);
-  }, [data, cId, changeActive, track, resetActive, searchValue]);
+  }, [data, cId, changeActive, track, resetActive, searchValue, rowToDelete]);
 
   const toastMarkup = active ? (
     <Toast content="Operation Success!" onDismiss={toggleActive} />
@@ -166,9 +178,7 @@ export default function Table({ data, cId }) {
             verticalAlign="middle"
             rows={rows.slice(
               (currentPage - 1) * perPage,
-              total > currentPage * perPage - 1
-                ? currentPage * perPage - 1
-                : total
+              total > currentPage * perPage - 1 ? currentPage * perPage : total
             )}
           />
 

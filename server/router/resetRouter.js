@@ -48,6 +48,15 @@ function register(app) {
     ctx.body = { success: true };
   });
 
+  router.post("/deleteById", async (ctx) => {
+    const customer_id = ctx.request.body.id;
+    console.log("delete", customer_id);
+    await trackModel.findOneAndUpdate({
+      customer_id: customer_id,
+    });
+    ctx.body = { success: true };
+  });
+
   app.use(router.routes());
   app.use(router.allowedMethods());
 }

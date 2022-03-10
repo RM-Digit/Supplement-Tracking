@@ -28,6 +28,10 @@ const updateById = (id, value) => {
   return axios.post("/api/updateById", { id: id, value: value });
 };
 
+const deleteById = (id) => {
+  return axios.post("/api/deleteById", { id: id });
+};
+
 export const http = {
   getCustomers,
   updateCustomers,
@@ -36,4 +40,5 @@ export const http = {
   resetAll,
   resetById,
   updateById,
+  deleteById,
 };
