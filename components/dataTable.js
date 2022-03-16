@@ -2,15 +2,16 @@ import React, { useCallback, useState, useEffect } from "react";
 import {
   Card,
   DataTable,
-  Icon,
+  ContextualSaveBar,
   Button,
   FooterHelp,
+  Modal,
   Pagination,
   Link,
   TextField,
   Toast,
 } from "@shopify/polaris";
-import Modal from "./modal";
+import HistoryModal from "./modal";
 import Empty from "./empty.js";
 import { http } from "../services/httpServices";
 import {
@@ -34,6 +35,7 @@ export default function Table({ data, cId }) {
   const toggleActive = useCallback(() => setActive((active) => !active), []);
   const [searchValue, setSearchValue] = useState("");
   const [rowToDelete, setDeleteRow] = useState("");
+  const [deleteModalActive, setDeleteModalActive] = useState(false);
 
   const perPage = 10;
   const handleClick = (history) => {
@@ -85,9 +87,13 @@ export default function Table({ data, cId }) {
     setSearchValue(value);
   };
 
-  const handleDelete = async (customerId) => {
-    await http.deleteById(customerId);
-    setDeleteRow(customerId);
+  const handleDelete = async (type) => {
+    if (type === "yes") {
+      await http.deleteById(rowToDelete);
+    } else {
+      setDeleteRow("");
+    }
+    setDeleteModalActive(false);
   };
 
   useEffect(() => {
@@ -141,7 +147,10 @@ export default function Table({ data, cId }) {
             icon={ResetMinor}
           ></Button>
           <Button
-            onClick={() => handleDelete(row.customer_id)}
+            onClick={() => {
+              setDeleteModalActive(true);
+              setDeleteRow(row.customer_id);
+            }}
             icon={DeleteMajor}
           ></Button>
         </span>,
@@ -157,6 +166,21 @@ export default function Table({ data, cId }) {
 
   return (
     <>
+      <Modal
+        open={deleteModalActive}
+        onClose={() => setDeleteModalActive(false)}
+        title="Are you sure you want to delete this customer?"
+        primaryAction={{
+          content: "Yes",
+          onAction: () => handleDelete("yes"),
+        }}
+        secondaryActions={[
+          {
+            content: "No",
+            onAction: () => handleDelete("no"),
+          },
+        ]}
+      ></Modal>
       {(cId === "" || (cId && rows.length > 0)) && (
         <Card
           actions={[
@@ -199,7 +223,7 @@ export default function Table({ data, cId }) {
               }}
             />
           </FooterHelp>
-          <Modal open={open} data={modalData} />
+          <HistoryModal open={open} data={modalData} />
         </Card>
       )}
       {cId && rows.length === 0 && <Empty />}
