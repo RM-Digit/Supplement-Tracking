@@ -8,12 +8,16 @@ const router = new Router({
 function register(app) {
   router.post("/resetById", async (ctx) => {
     const customer_id = ctx.request.body.id;
-    console.log("reset", customer_id);
+    const customer = await trackModel.findOne({ customer_id: customer_id })
     const update = await trackModel.findOneAndUpdate(
       { customer_id: customer_id },
       {
+        customer_id:customer_id,
+        customer_email: customer.customer_email,
+        customer_name: customer.customer_name,
         track: 0,
         history: {
+          ...customer.history,
           "manual reset": [
             new Date().toLocaleDateString(),
             "Manual Reset",
@@ -30,12 +34,17 @@ function register(app) {
   router.post("/updateById", async (ctx) => {
     const customer_id = ctx.request.body.id;
     const val = ctx.request.body.value;
-    console.log("update", customer_id);
+    const customer = await trackModel.findOne({ customer_id: customer_id })
+
     const update = await trackModel.findOneAndUpdate(
       { customer_id: customer_id },
       {
+        customer_id:customer_id,
+        customer_email: customer.customer_email,
+        customer_name: customer.customer_name,
         track: val,
         history: {
+          ...customer.history,
           "manual change": [
             new Date().toLocaleDateString(),
             "Manual Change",
@@ -51,7 +60,7 @@ function register(app) {
   router.post("/deleteById", async (ctx) => {
     const customer_id = ctx.request.body.id;
     console.log("delete", customer_id);
-    await trackModel.findOneAndUpdate({
+    await trackModel.findOneAndDelete({
       customer_id: customer_id,
     });
     ctx.body = { success: true };

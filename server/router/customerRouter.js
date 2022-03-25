@@ -101,15 +101,15 @@ async function updateTable() {
     });
   });
 
-  const bulkWrite = await trackModel.bulkWrite(
-    data.map((order) => ({
-      updateOne: {
-        filter: { customer_id: order.customer_id },
-        update: { $set: order },
-        upsert: true,
-      },
-    }))
-  );
+  // const bulkWrite = await trackModel.bulkWrite(
+  //   data.map((order) => ({
+  //     updateOne: {
+  //       filter: { customer_id: order.customer_id },
+  //       update: { $set: order },
+  //       upsert: true,
+  //     },
+  //   }))
+  // );
   const deleteModel = await trackModel.deleteMany({});
   const saveModel = await trackModel.insertMany(data);
 
@@ -133,6 +133,8 @@ async function addAllCustomers() {
   console.log("customers", customers.length);
   var arrayToAdd = [];
   customers.forEach((customer) => {
+    const fullName = `${customer.first_name} ${customer.last_name}`;
+
     const find = data.findIndex(
       (c) => c.customer_id === customer.id.toString()
     );
@@ -140,11 +142,11 @@ async function addAllCustomers() {
       const temp = {
         customer_id: customer.id,
         customer_email: customer.email,
-        customer_name: `${customer.first_name} ${customer.last_name}`,
+        customer_name: fullName,
         history: {
           [customer.id]: [
             customer.created_at,
-            `${customer.first_name} ${customer.last_name}`,
+            fullName,
             customer.email,
             "New Customer Added",
           ],

@@ -110,6 +110,7 @@ app.prepare().then(async () => {
   require("./router/posRouter")(server);
   require("./router/productRouter")(server);
   require("./router/resetRouter")(server);
+  require("./router/test")(server);
 
   server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);

@@ -100,8 +100,7 @@ function register(app) {
           };
         }
       });
-      const saveCustomer = new trackModel(dataToSave);
-      await saveCustomer.save(dataToSave);
+      await trackModel.create(dataToSave)
     } else {
       const temp = {
         customer_id: customer_id,
@@ -117,18 +116,24 @@ function register(app) {
           ],
         },
       };
-      const inst = new trackModel(temp);
-      await inst.save(temp);
+    
+      await trackModel.create(temp)
     }
 
     if (check_rest >= 2) {
+      check_rest = 0;
+      const customer_history = customer.history;
       const update = await trackModel.findOneAndUpdate(
         { customer_id: customer_id },
         {
+          customer_id: customer_id,
+          customer_email: customer.customer_email,
+          customer_name: customer.customer_name,
           track: 0,
           history: {
-            [order.id]: [
-              new Date().toLocaleDateString(),
+            ...customer_history,
+            [order.id + customer_id]: [
+              order.created_at,
               "Reset",
               order.order_status_url,
               0,
