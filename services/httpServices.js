@@ -32,6 +32,10 @@ const deleteById = (id) => {
   return axios.post("/api/deleteById", { id: id });
 };
 
+const addCustomer = (customer) => {
+  return axios.post("/api/addNewCustomer", { customer: customer });
+};
+
 export const http = {
   getCustomers,
   updateCustomers,
@@ -41,4 +45,5 @@ export const http = {
   resetById,
   updateById,
   deleteById,
+  addCustomer,
 };

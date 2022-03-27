@@ -2,7 +2,6 @@ import React, { useCallback, useState, useEffect } from "react";
 import {
   Card,
   DataTable,
-  ContextualSaveBar,
   Button,
   FooterHelp,
   Modal,
@@ -22,7 +21,7 @@ import {
   DeleteMajor,
 } from "@shopify/polaris-icons";
 
-export default function Table({ data, cId }) {
+export default function Table({ data, cId, getFilteredRows }) {
   const [rows, setRows] = useState([]);
   const [changeActive, setChangeActive] = useState(-1);
   const [track, setTrack] = useState(0);
@@ -36,6 +35,7 @@ export default function Table({ data, cId }) {
   const [searchValue, setSearchValue] = useState("");
   const [rowToDelete, setDeleteRow] = useState("");
   const [deleteModalActive, setDeleteModalActive] = useState(false);
+  const [supplements, searchSupplements] = useState("");
 
   const perPage = 10;
   const handleClick = (history) => {
@@ -62,7 +62,6 @@ export default function Table({ data, cId }) {
   };
 
   const handleChange = (row, index) => {
-    console.log("changeActive", row);
     setChangeActive(index);
   };
 
@@ -78,12 +77,10 @@ export default function Table({ data, cId }) {
   };
 
   const handleTextChange = (v) => {
-    console.log("v", v);
     setTrack(v);
   };
 
   const handleSearch = (value) => {
-    console.log("value", value);
     setSearchValue(value);
   };
 
@@ -101,7 +98,8 @@ export default function Table({ data, cId }) {
     if (cId) {
       pageData = data.filter((row) => row.customer_id.toString() === cId);
     }
-    let tableRows = pageData
+    const filteredRows = pageData
+      .filter((c) => supplements === "" || c.track == supplements)
       .filter((r) => r.customer_id !== rowToDelete)
       .filter(
         (row) =>
@@ -111,54 +109,64 @@ export default function Table({ data, cId }) {
               .includes(searchValue.toLowerCase())) ||
           (row.customer_name &&
             row.customer_name.toLowerCase().includes(searchValue.toLowerCase()))
-      )
-      .map((row, index) => [
-        row.customer_name,
-        row.customer_email,
-        changeActive === index ? (
-          <TextField value={track} onChange={handleTextChange} />
-        ) : resetActive.includes(index) ? (
-          0
+      );
+    let tableRows = filteredRows.map((row, index) => [
+      row.customer_name,
+      row.customer_email,
+      changeActive === index ? (
+        <TextField value={track} onChange={handleTextChange} />
+      ) : resetActive.includes(index) ? (
+        0
+      ) : (
+        row.track
+      ),
+      <span style={{ display: "flex", gap: "10px" }}>
+        {changeActive === index ? (
+          <Button
+            onClick={() => handleUpdate(row.customer_id, index)}
+            icon={SaveMinor}
+          ></Button>
         ) : (
-          row.track
-        ),
-        <span style={{ display: "flex", gap: "10px" }}>
-          {changeActive === index ? (
-            <Button
-              onClick={() => handleUpdate(row.customer_id, index)}
-              icon={SaveMinor}
-            ></Button>
-          ) : (
-            <Button
-              onClick={() => {
-                handleChange(row.customer_id, index);
-              }}
-              icon={ExchangeMajor}
-            ></Button>
-          )}
           <Button
             onClick={() => {
-              handleClick(row.history);
+              handleChange(row.customer_id, index);
             }}
-            icon={RecentSearchesMajor}
+            icon={ExchangeMajor}
           ></Button>
-          <Button
-            onClick={() => handleReset(row.customer_id, index)}
-            icon={ResetMinor}
-          ></Button>
-          <Button
-            onClick={() => {
-              setDeleteModalActive(true);
-              setDeleteRow(row.customer_id);
-            }}
-            icon={DeleteMajor}
-          ></Button>
-        </span>,
-      ]);
+        )}
+        <Button
+          onClick={() => {
+            handleClick(row.history);
+          }}
+          icon={RecentSearchesMajor}
+        ></Button>
+        <Button
+          onClick={() => handleReset(row.customer_id, index)}
+          icon={ResetMinor}
+        ></Button>
+        <Button
+          onClick={() => {
+            setDeleteModalActive(true);
+            setDeleteRow(row.customer_id);
+          }}
+          icon={DeleteMajor}
+        ></Button>
+      </span>,
+    ]);
 
-    setTotal(pageData.length);
+    setTotal(tableRows.length);
     setRows(tableRows);
-  }, [data, cId, changeActive, track, resetActive, searchValue, rowToDelete]);
+    getFilteredRows(filteredRows);
+  }, [
+    data,
+    cId,
+    changeActive,
+    track,
+    resetActive,
+    searchValue,
+    rowToDelete,
+    supplements,
+  ]);
 
   const toastMarkup = active ? (
     <Toast content="Operation Success!" onDismiss={toggleActive} />
@@ -187,9 +195,20 @@ export default function Table({ data, cId }) {
             {
               content: (
                 <TextField
+                  min={0}
+                  value={supplements}
+                  type="number"
+                  onChange={(v) => searchSupplements(v)}
+                  placeholder="All"
+                />
+              ),
+            },
+            {
+              content: (
+                <TextField
                   value={searchValue}
                   onChange={(v) => handleSearch(v)}
-                  placeholder="Search By Email or Name"
+                  placeholder="Type Email or Name"
                 />
               ),
             },

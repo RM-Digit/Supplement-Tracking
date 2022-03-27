@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { EmptyState, Layout } from "@shopify/polaris";
 import { ResourcePicker } from "@shopify/app-bridge-react";
 
-const Index = ({ setPickedProducts, initProducts }) => {
+const Index = ({ setPickedProducts }) => {
   const [open, setPickerOpen] = useState(false);
   const handleSelection = (resources) => {
     setPickerOpen(false);

@@ -3,28 +3,41 @@ import Table from "../components/dataTable";
 import { useState, useEffect } from "react";
 import { http } from "../services/httpServices";
 import {
+  CustomerPlusMajor,
   AddProductMajor,
   ExportMinor,
-  
 } from "@shopify/polaris-icons";
 import ProductPicker from "../components/resourcePicker";
 import ProductList from "../components/productList";
 import { CSVLink } from "react-csv";
+import AddCustomer from "../components/AddCustomer";
+import Toast from "../components/Toast";
+
 const Index = () => {
   const [customers, setCustomers] = useState([]);
   const [csvData, setCSVData] = useState([]);
   const [products, setProducts] = useState([]);
   const [cId, setCustomerId] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [active, setActive] = useState(false);
+  const [filteredRows, setFilteredRows] = useState([]);
+  const [notification, setNotification] = useState({
+    err: false,
+    msg: "",
+  });
 
   const handleAddProducts = () => {
     setPickerOpen((pickerOpen) => !pickerOpen);
   };
 
-  const handleCSVExport = () => {
-    console.log("handleCSVExport", customers);
-    const data = customers.map((c) => {
-      const history = Object.values(c.history);
+  const handleAddCustomers = () => {
+    setShowAdd((showAdd) => !showAdd);
+  };
+
+  const handleCSVExport = (e, done) => {
+    const data = filteredRows.map((c) => {
+      const history = c.history ? Object.values(c.history) : [];
       var purchaseHistory = {};
       history.forEach((h, i) => {
         purchaseHistory = {
@@ -33,7 +46,6 @@ const Index = () => {
         };
       });
       return {
-        customer_id: c.customer_id + ".",
         customer_name: c.customer_name,
         customer_email: c.customer_email,
         track: c.track,
@@ -42,6 +54,7 @@ const Index = () => {
     });
     console.log("csv", data);
     setCSVData(data);
+    done();
   };
 
   const getPickedProducts = async (values) => {
@@ -70,14 +83,57 @@ const Index = () => {
     setProducts(products.data.products);
   };
 
+  const addNewCustomer = async (customer) => {
+    const dataToAdd = {
+      customer_email: customer.email,
+      customer_name: customer.name,
+      track: customer.track,
+      date: customer.createdAt,
+    };
+    http
+      .addCustomer(dataToAdd)
+      .then((res) => {
+        if (res.data.success) {
+          setActive(true);
+          setNotification({
+            msg: "Successfully Added a New Customer!",
+            err: false,
+          });
+        } else {
+          setActive(true);
+          setNotification({
+            msg: "Failed! This email address is already being used!",
+            err: true,
+          });
+        }
+      })
+      .catch((err) => {
+        setActive(true);
+        setNotification({ msg: "Server Error", err: true });
+      });
+  };
+
   useEffect(() => {
     init();
   }, []);
+
+  const toastMarkup = active ? (
+    <Toast
+      notification={notification}
+      callBack={(active) => setActive(active)}
+    />
+  ) : null;
+
   return (
     <Frame>
       <Page
         title={"Tracking Report"}
         secondaryActions={[
+          {
+            content: "Add Customers",
+            icon: CustomerPlusMajor,
+            onAction: handleAddCustomers,
+          },
           {
             content: "Add Products",
             icon: AddProductMajor,
@@ -95,9 +151,11 @@ const Index = () => {
               </CSVLink>
             ),
             icon: ExportMinor,
-          }
+          },
         ]}
       >
+        {toastMarkup}
+        {showAdd && <AddCustomer getCustomer={addNewCustomer} />}
         {pickerOpen && (
           <ProductPicker
             setPickedProducts={getPickedProducts}
@@ -108,7 +166,11 @@ const Index = () => {
           <ProductList products={products} />
         )}
         {customers.length > 0 ? (
-          <Table data={customers} cId={cId} />
+          <Table
+            data={customers}
+            cId={cId}
+            getFilteredRows={(rows) => setFilteredRows(rows)}
+          />
         ) : (
           <SkeletonBodyText />
         )}

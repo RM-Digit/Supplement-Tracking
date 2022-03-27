@@ -8,3 +8,24 @@ span.Polaris-Button__Text > a {
 .Polaris-Card__Header {
   padding-bottom: 2rem;
 }
+.Polaris-FormLayout__Items {
+  padding: 20px;
+}
+.Polaris-FormLayout--condensed .Polaris-FormLayout__Item {
+  min-width: auto;
+}
+.Polaris-FormLayout__Item > h2 > div:first-child {
+  margin-bottom: 30px;
+}
+.Polaris-Button--plain:hover,
+.Polaris-Button--plain:focus {
+  text-decoration: none !important;
+}
+.Polaris-Card__Header
+  .Polaris-ButtonGroup
+  .Polaris-ButtonGroup__Item:first-child {
+  width: 20%;
+}
+.Polaris-Card__Header .Polaris-ButtonGroup {
+  justify-content: flex-end;
+}
