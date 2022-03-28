@@ -43,39 +43,62 @@ function register(app) {
       }
     });
 
-    const customer = tracks.find((x) => x.customer_id === customer_id);
-
-    if (customer) {
-      let dataToSave = {};
-      dataToSave.track = customer.track;
-      for (let i = 0; i < line_items.length; i++) {
-        const item = line_items[i];
-        if (Object.keys(purchaseUpdate).includes(item.product_id)) {
-          const history = {
-            ...customer.history,
-            ...dataToSave.history,
-            [item.product_id + order.id]: [
-              order.created_at,
-              item.title,
-              order.order_status_url,
-              purchaseUpdate[item.product_id] * item.quantity,
-            ],
-          };
-          dataToSave = {
-            customer_id: customer_id,
-            customer_email: order.customer.email,
-            customer_name: `${order.customer.first_name} ${order.customer.last_name}`,
-            track:
-              dataToSave.track +
-              purchaseUpdate[item.product_id] * item.quantity,
-            history: history,
-          };
-        }
-      }
-      await trackModel.findOneAndReplace(
+    if (check_rest >= 2) {
+      check_rest = 0;
+      const customer = tracks.find((x) => x.customer_id === customer_id);
+      const customer_history = customer.history;
+      const update = await trackModel.findOneAndUpdate(
         { customer_id: customer_id },
-        dataToSave
+        {
+          customer_id: customer_id,
+          customer_email: customer.customer_email,
+          customer_name: customer.customer_name,
+          track: 0,
+          history: {
+            ...customer_history,
+            [order.id + customer_id]: [
+              order.created_at,
+              "Reset",
+              order.order_status_url,
+              0,
+            ],
+          },
+        }
       );
+    }
+
+    const customer = tracks.find((x) => x.customer_id === customer_id);
+    if (customer) {
+      if (hasSupplements) {
+        let dataToSave = customer;
+        for (let i = 0; i < line_items.length; i++) {
+          const item = line_items[i];
+          if (Object.keys(purchaseUpdate).includes(item.product_id)) {
+            const history = {
+              ...dataToSave.history,
+              [item.product_id + order.id]: [
+                order.created_at,
+                item.title,
+                order.order_status_url,
+                purchaseUpdate[item.product_id] * item.quantity,
+              ],
+            };
+            dataToSave = {
+              customer_id: customer_id,
+              customer_email: order.customer.email,
+              customer_name: `${order.customer.first_name} ${order.customer.last_name}`,
+              track:
+                dataToSave.track +
+                purchaseUpdate[item.product_id] * item.quantity,
+              history: history,
+            };
+          }
+        }
+        await trackModel.findOneAndReplace(
+          { customer_id: customer_id },
+          dataToSave
+        );
+      }
     } else if (hasSupplements) {
       let dataToSave = {};
       dataToSave.track = 0;
@@ -100,7 +123,7 @@ function register(app) {
           };
         }
       });
-      await trackModel.create(dataToSave)
+      await trackModel.create(dataToSave);
     } else {
       const temp = {
         customer_id: customer_id,
@@ -116,32 +139,10 @@ function register(app) {
           ],
         },
       };
-    
-      await trackModel.create(temp)
+
+      await trackModel.create(temp);
     }
 
-    if (check_rest >= 2) {
-      check_rest = 0;
-      const customer_history = customer.history;
-      const update = await trackModel.findOneAndUpdate(
-        { customer_id: customer_id },
-        {
-          customer_id: customer_id,
-          customer_email: customer.customer_email,
-          customer_name: customer.customer_name,
-          track: 0,
-          history: {
-            ...customer_history,
-            [order.id + customer_id]: [
-              order.created_at,
-              "Reset",
-              order.order_status_url,
-              0,
-            ],
-          },
-        }
-      );
-    }
     ctx.status = 200;
     ctx.body = { success: true };
   });
