@@ -43,7 +43,23 @@ async function updateTable() {
       ) {
         check_rest++;
       }
-
+      if (
+        check_rest === 2 &&
+        duplicate_check[order.customer.id] !== undefined
+      ) {
+        check_rest = 0;
+        const i = duplicate_check[order.customer.id];
+        data[i].track = 0;
+        data[i].history = {
+          ...data[i].history,
+          [item.product_id + order.id]: [
+            order.created_at,
+            "Reset",
+            order.order_status_url,
+            0,
+          ],
+        };
+      }
       if (Object.keys(purchaseUpdate).includes(item.product_id.toString())) {
         const customer_id = order.customer.id;
 
@@ -80,23 +96,6 @@ async function updateTable() {
           };
           data.push(temp);
         }
-      }
-      if (
-        check_rest === 2 &&
-        duplicate_check[order.customer.id] !== undefined
-      ) {
-        check_rest = 0;
-        const i = duplicate_check[order.customer.id];
-        data[i].track = 0;
-        data[i].history = {
-          ...data[i].history,
-          [item.product_id + order.id]: [
-            order.created_at,
-            "Reset",
-            order.order_status_url,
-            0,
-          ],
-        };
       }
     });
   });

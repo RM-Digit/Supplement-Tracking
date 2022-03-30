@@ -8,17 +8,23 @@ const router = new Router({
 
 function register(app) {
   router.post("/order-received", async (ctx) => {
+    console.log("Hook Trigger");
     const order = ctx.request.body;
-    if (!order.customer) return;
+    if (!order.customer) {
+      ctx.status = 200;
+      ctx.body = { success: false, msg: "no customer" };
+      return;
+    }
     console.log("webhook order", order.source_name, order.customer.id);
     const customer_id = order.customer.id.toString();
     const products = await prodcutModel.find({});
     const tracks = await trackModel.find({});
+
     const resetProducts = ["7342578958577", "7342578565361"];
     var purchaseUpdate = {};
     var hasSupplements = false;
-    var check_rest = 0;
-
+    var check_reset = 0;
+    var customer = tracks.find((x) => x.customer_id === customer_id);
     products.forEach((product) => {
       purchaseUpdate = {
         ...purchaseUpdate,
@@ -39,13 +45,13 @@ function register(app) {
         resetProducts.includes(item.product_id) &&
         item.total_discount === item.price
       ) {
-        check_rest++;
+        check_reset++;
       }
     });
 
-    if (check_rest >= 2) {
-      check_rest = 0;
-      const customer = tracks.find((x) => x.customer_id === customer_id);
+    if (check_reset >= 2) {
+      check_reset = 0;
+
       const customer_history = customer.history;
       const update = await trackModel.findOneAndUpdate(
         { customer_id: customer_id },
@@ -63,11 +69,12 @@ function register(app) {
               0,
             ],
           },
-        }
+        },
+        { new: true }
       );
+      customer = update;
     }
 
-    const customer = tracks.find((x) => x.customer_id === customer_id);
     if (customer) {
       if (hasSupplements) {
         let dataToSave = customer;
@@ -123,6 +130,7 @@ function register(app) {
           };
         }
       });
+      console.log("dataToSave -- no customer", dataToSave);
       await trackModel.create(dataToSave);
     } else {
       const temp = {
@@ -139,7 +147,7 @@ function register(app) {
           ],
         },
       };
-
+      console.log("new customer");
       await trackModel.create(temp);
     }
 
