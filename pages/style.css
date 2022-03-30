@@ -29,3 +29,8 @@ span.Polaris-Button__Text > a {
 .Polaris-Card__Header .Polaris-ButtonGroup {
   justify-content: flex-end;
 }
+.Polaris-FormLayout--condensed .Polaris-FormLayout__Item:last-child {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
