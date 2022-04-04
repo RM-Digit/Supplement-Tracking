@@ -49,40 +49,14 @@ function register(app) {
       }
     });
 
-    if (check_reset >= 2) {
-      check_reset = 0;
-
-      const customer_history = customer.history;
-      const update = await trackModel.findOneAndUpdate(
-        { customer_id: customer_id },
-        {
-          customer_id: customer_id,
-          customer_email: customer.customer_email,
-          customer_name: customer.customer_name,
-          track: 0,
-          history: {
-            ...customer_history,
-            [order.id + customer_id]: [
-              order.created_at,
-              "Reset",
-              order.order_status_url,
-              0,
-            ],
-          },
-        },
-        { new: true }
-      );
-      customer = update;
-    }
-
     if (customer) {
       if (hasSupplements) {
-        let dataToSave = customer;
+        let dataToSave = {};
         for (let i = 0; i < line_items.length; i++) {
           const item = line_items[i];
           if (Object.keys(purchaseUpdate).includes(item.product_id)) {
             const history = {
-              ...dataToSave.history,
+              ...customer.history,
               [item.product_id + order.id]: [
                 order.created_at,
                 item.title,
@@ -95,7 +69,7 @@ function register(app) {
               customer_email: order.customer.email,
               customer_name: `${order.customer.first_name} ${order.customer.last_name}`,
               track:
-                dataToSave.track +
+                customer.track +
                 purchaseUpdate[item.product_id] * item.quantity,
               history: history,
             };
@@ -105,6 +79,7 @@ function register(app) {
           { customer_id: customer_id },
           dataToSave
         );
+        customer = dataToSave;
       }
     } else if (hasSupplements) {
       let dataToSave = {};
@@ -150,7 +125,31 @@ function register(app) {
       console.log("new customer");
       await trackModel.create(temp);
     }
-
+    if (check_reset >= 2) {
+      check_reset = 0;
+      const customer_history = customer.history;
+      const current = customer.track;
+      const update = await trackModel.findOneAndUpdate(
+        { customer_id: customer_id },
+        {
+          customer_id: customer_id,
+          customer_email: customer.customer_email,
+          customer_name: customer.customer_name,
+          track: current - 8,
+          history: {
+            ...customer_history,
+            [order.id + customer_id]: [
+              order.created_at,
+              "Reset",
+              order.order_status_url,
+              current - 8,
+            ],
+          },
+        },
+        { new: true }
+      );
+      customer = update;
+    }
     ctx.status = 200;
     ctx.body = { success: true };
   });
