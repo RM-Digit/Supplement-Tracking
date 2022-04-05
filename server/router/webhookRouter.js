@@ -135,14 +135,14 @@ function register(app) {
           customer_id: customer_id,
           customer_email: customer.customer_email,
           customer_name: customer.customer_name,
-          track: current - 8,
+          track: current > 8 ? current - 8 : 0,
           history: {
             ...customer_history,
             [order.id + customer_id]: [
               order.created_at,
               "Reset",
               order.order_status_url,
-              current - 8,
+              current > 8 ? current - 8 : 0,
             ],
           },
         },

@@ -87,14 +87,15 @@ async function updateTable() {
       ) {
         check_rest = 0;
         const i = duplicate_check[order.customer.id];
-        data[i].track = data[i].track - 8;
+        const track = data[i].track > 8 ? data[i].track - 8 : 0;
+        data[i].track = track;
         data[i].history = {
           ...data[i].history,
           [item.product_id + order.id]: [
             order.created_at,
             "Reset",
             order.order_status_url,
-            data[i].track,
+            track,
           ],
         };
       }
