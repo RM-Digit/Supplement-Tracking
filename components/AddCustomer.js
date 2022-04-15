@@ -65,6 +65,7 @@ export default function AddCustomer({ getCustomer }) {
           label="Track"
           type="number"
           value={track}
+          min={0}
           onChange={setTrack}
           autoComplete="off"
         />

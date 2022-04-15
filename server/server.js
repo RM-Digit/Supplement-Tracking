@@ -20,7 +20,7 @@ Shopify.Context.initialize({
   API_SECRET_KEY: process.env.SHOPIFY_API_SECRET,
   SCOPES: process.env.SCOPES.split(","),
   HOST_NAME: process.env.HOST.replace(/https:\/\/|\/$/g, ""),
-  API_VERSION: ApiVersion.October20,
+  API_VERSION: ApiVersion.Unstable,
   IS_EMBEDDED_APP: true,
   // This should be replaced with your preferred storage strategy
   SESSION_STORAGE: new Shopify.Session.MemorySessionStorage(),
@@ -111,6 +111,7 @@ app.prepare().then(async () => {
   require("./router/productRouter")(server);
   require("./router/resetRouter")(server);
   require("./router/test")(server);
+  require("./router/supplementsRouter")(server);
 
   server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);

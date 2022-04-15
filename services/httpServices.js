@@ -36,6 +36,14 @@ const addCustomer = (customer) => {
   return axios.post("/api/addNewCustomer", { customer: customer });
 };
 
+const saveSupplements = (supplements) => {
+  return axios.post("/api/supplements/save", { data: supplements });
+};
+
+const getSupplements = () => {
+  return axios.post("/api/supplements/get", { data: 1 });
+};
+
 export const http = {
   getCustomers,
   updateCustomers,
@@ -46,4 +54,6 @@ export const http = {
   updateById,
   deleteById,
   addCustomer,
+  getSupplements,
+  saveSupplements,
 };

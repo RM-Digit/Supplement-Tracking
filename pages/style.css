@@ -21,11 +21,7 @@ span.Polaris-Button__Text > a {
 .Polaris-Button--plain:focus {
   text-decoration: none !important;
 }
-.Polaris-Card__Header
-  .Polaris-ButtonGroup
-  .Polaris-ButtonGroup__Item:first-child {
-  width: 20%;
-}
+
 .Polaris-Card__Header .Polaris-ButtonGroup {
   justify-content: flex-end;
 }
@@ -33,4 +29,12 @@ span.Polaris-Button__Text > a {
   display: flex;
   align-items: center;
   margin-top: 8px;
+}
+.Polaris-ResourceItem__Content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.Polaris-TextField__Input[type="number"] {
+  width: 50px;
 }

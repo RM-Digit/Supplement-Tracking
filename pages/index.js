@@ -8,7 +8,9 @@ import {
   ExportMinor,
 } from "@shopify/polaris-icons";
 import ProductPicker from "../components/resourcePicker";
+import SupplementsPicker from "../components/supplementsPicker";
 import ProductList from "../components/productList";
+import SupplementsList from "../components/supplementsList";
 import { CSVLink } from "react-csv";
 import AddCustomer from "../components/AddCustomer";
 import Toast from "../components/Toast";
@@ -17,8 +19,10 @@ const Index = () => {
   const [customers, setCustomers] = useState([]);
   const [csvData, setCSVData] = useState([]);
   const [products, setProducts] = useState([]);
+  const [supplements, setSupplements] = useState([]);
   const [cId, setCustomerId] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [supplementsPickerOpen, setSupplementsPickerOpen] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [active, setActive] = useState(false);
   const [filteredRows, setFilteredRows] = useState([]);
@@ -29,6 +33,10 @@ const Index = () => {
 
   const handleAddProducts = () => {
     setPickerOpen((pickerOpen) => !pickerOpen);
+  };
+
+  const handleAddSupplements = () => {
+    setSupplementsPickerOpen((supplementsPickerOpen) => !supplementsPickerOpen);
   };
 
   const handleAddCustomers = () => {
@@ -60,27 +68,19 @@ const Index = () => {
   const getPickedProducts = async (values) => {
     setProducts(values);
     console.log("product updated");
-    await http.updateCustomers();
-
-    const timer = setInterval(async () => {
-      const customers = await http.getCustomers();
-      setCustomers(customers.data.data);
-      if (customers.data.data.length > 0) {
-        clearInterval(timer);
-        setCustomers(customers.data.data);
-      }
-    }, 3000);
+    // await http.updateCustomers();
+    // const timer = setInterval(async () => {
+    //   const customers = await http.getCustomers();
+    //   setCustomers(customers.data.data);
+    //   if (customers.data.data.length > 0) {
+    //     clearInterval(timer);
+    //     setCustomers(customers.data.data);
+    //   }
+    // }, 3000);
   };
 
-  const init = async () => {
-    let params = new URLSearchParams(window.location.search);
-    let id = params.get("id");
-    id && setCustomerId(id);
-
-    const customers = await http.getCustomers();
-    setCustomers(customers.data.data);
-    const products = await http.getProducts();
-    setProducts(products.data.products);
+  const getPickedSupplements = async (values) => {
+    setSupplements(values);
   };
 
   const addNewCustomer = async (customer) => {
@@ -113,6 +113,19 @@ const Index = () => {
       });
   };
 
+  const init = async () => {
+    let params = new URLSearchParams(window.location.search);
+    let id = params?.get("id");
+    id && setCustomerId(id);
+
+    const customers = await http.getCustomers();
+    setCustomers(customers.data.data);
+    const products = await http.getProducts();
+    setProducts(products.data.products);
+    const supplementProducts = await http.getSupplements();
+    setSupplements(supplementProducts.data.supplements);
+  };
+
   useEffect(() => {
     init();
   }, []);
@@ -140,6 +153,11 @@ const Index = () => {
             onAction: handleAddProducts,
           },
           {
+            content: "Add Supplements",
+            icon: AddProductMajor,
+            onAction: handleAddSupplements,
+          },
+          {
             content: (
               <CSVLink
                 data={csvData}
@@ -161,6 +179,12 @@ const Index = () => {
             setPickedProducts={getPickedProducts}
             initProducts={products}
           />
+        )}
+        {supplementsPickerOpen && (
+          <SupplementsPicker setPickedProducts={getPickedSupplements} />
+        )}
+        {supplementsPickerOpen && supplements.length > 0 && (
+          <SupplementsList products={supplements} />
         )}
         {pickerOpen && products.length > 0 && (
           <ProductList products={products} />
