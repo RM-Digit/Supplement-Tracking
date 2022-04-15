@@ -189,21 +189,6 @@ function register(app) {
         await trackModel.create(temp);
       }
 
-      if (customer && customer.track > 8 && order.source_name === "web") {
-        const order_gid = order.admin_graphql_api_id;
-        const variantsToAdd = await supplementsModel.find({});
-        for (let i = 0; i < variantsToAdd.length; i++) {
-          const { product_GID, quantity } = variantsToAdd[i];
-          const cid = await getCalcOrderID(order_gid);
-          const variantAdd = await addVariantToOrder(
-            cid,
-            product_GID,
-            quantity
-          );
-          const commit = await commitOrderEdit(cid);
-        }
-      }
-
       if (check_reset >= 2) {
         check_reset = 0;
         const customer_history = customer.history;
@@ -227,7 +212,44 @@ function register(app) {
           },
           { new: true }
         );
-        customer = update;
+      }
+
+      if (customer && customer.track > 8 && order.source_name === "web") {
+        const order_gid = order.admin_graphql_api_id;
+        const variantsToAdd = await supplementsModel.find({});
+        var addedVariants = [];
+        for (let i = 0; i < variantsToAdd.length; i++) {
+          const {
+            product_id,
+            image,
+            product_GID,
+            quantity,
+            title,
+          } = variantsToAdd[i];
+          const cid = await getCalcOrderID(order_gid);
+          const variantAdd = await addVariantToOrder(
+            cid,
+            product_GID,
+            quantity
+          );
+          addedVariants.push({
+            id: product_id,
+            title: title,
+            image: image,
+            quantity: quantity,
+          });
+          const commit = await commitOrderEdit(cid);
+        }
+        const activity = {
+          customer_id: customer.customer_id,
+          order_id: order.id,
+          customer_name: customer.customer_name,
+          edit_date: new Date(),
+          addedVariants: addedVariants,
+          order_origin: order.source_name,
+          note: `Edited by App: supplements - ${customer.track}`,
+        };
+        supplementsModel.create(activity);
       }
     } catch (error) {
       ctx.status = 200;
