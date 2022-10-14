@@ -6,8 +6,9 @@ import Shopify, { ApiVersion } from "@shopify/shopify-api";
 import Koa from "koa";
 import next from "next";
 import Router from "koa-router";
-const cors = require("@koa/cors");
-const bodyParser = require("koa-bodyparser");
+import cors from "@koa/cors";
+import bodyParser from "koa-bodyparser";
+
 dotenv.config();
 const port = parseInt(process.env.PORT, 10) || 8081;
 const dev = process.env.NODE_ENV !== "production";
@@ -110,7 +111,6 @@ app.prepare().then(async () => {
   require("./router/posRouter")(server);
   require("./router/productRouter")(server);
   require("./router/resetRouter")(server);
-  require("./router/test")(server);
   require("./router/supplementsRouter")(server);
 
   server.listen(port, () => {

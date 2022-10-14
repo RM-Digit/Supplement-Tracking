@@ -10,24 +10,26 @@ function register(app) {
     i++;
     const body = ctx.request.body;
 
+    console.log("pos promote", body);
+
     const trackData = await trackModel.find({});
     var total = 0,
       curr = {};
     var balance = 0;
 
     trackData.forEach((d) => {
-      if (d.customer_email === body.customer_email) {
+      if (d.customer_id == body.customer_id) {
         curr.track = d.track;
         curr.name = d.customer_name;
       }
       total += d.track;
     });
-    if (body.customer_id === null) {
+    if (body.customer_id === null || body.customer_id === 0) {
       balance = total;
     } else {
       balance = curr.track || 0;
     }
-
+    console.log("balance", balance);
     ctx.status = 200;
     ctx.body = {
       type: "simple_action_list",

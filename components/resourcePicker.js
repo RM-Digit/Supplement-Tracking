@@ -22,7 +22,7 @@ const Index = ({ setPickedProducts }) => {
   return (
     <Layout>
       <ResourcePicker
-        resourceType="Product"
+        resourceType="ProductVariant"
         showVariants={false}
         open={open}
         onSelection={(resources) => handleSelection(resources)}
